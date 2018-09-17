@@ -1,0 +1,517 @@
+---
+title: "final_analysis"
+output: html_document
+---
+
+```{r, warning=FALSE}
+library(readr)
+library(dplyr)
+library(data.table)
+library(ggplot2)
+library(ggsignif)
+library(gmodels)
+
+#dataset for analysis (created in final_dataset.R)
+reviewlocation <- read_csv('final_data.csv')
+```
+```{r}
+#this function generates all the graphics, scroll to the bottom of the file and run chunk to generate
+graphics <- function(a, b, c, d, e, f, g, h) {
+  print(a)
+  print(b)
+  print(c)
+  print(d) 
+  print(e) 
+  print(f)
+  print(g)
+  print(h)
+}
+```
+
+```{r}
+#table with total number of reviews in each location type...0 is rural, 1 is urban cluster, and 2 is urban center
+
+counts_urbanrural <- reviewlocation %>%
+  select(`Location Id`, urbanRural, country, `Predicted Sentiment`, Cost, publicPrivate, Tot_Population_CEN_2010, `User Id`) %>%
+  filter(!is.na(urbanRural)) %>%
+  group_by(urbanRural) %>%
+  summarise(count = n())
+
+#the following dataframes create the counts by location type and sentiment
+counts_posneg_urbanrural <- reviewlocation %>%
+    select(`Location Id`, urbanRural, country, `Predicted Sentiment`, Cost, publicPrivate, Tot_Population_CEN_2010, `User Id`)
+
+rural1pos <- counts_posneg_urbanrural %>%
+  filter(!is.na(urbanRural)) %>%
+  filter(urbanRural == 0) %>%
+  filter(`Predicted Sentiment` == 'POSITIVE') %>%
+  summarise(n())
+
+rural1neg <- counts_posneg_urbanrural %>%
+  filter(!is.na(urbanRural)) %>%
+  filter(urbanRural == 0) %>%
+  filter(`Predicted Sentiment` == 'NEGATIVE') %>%
+  summarise(n())
+
+urbancluster1pos <- counts_posneg_urbanrural %>%
+  filter(!is.na(urbanRural)) %>%
+  filter(urbanRural == 1) %>%
+  filter(`Predicted Sentiment` == 'POSITIVE') %>%
+  summarise(n())
+
+urbancluster1neg <- counts_posneg_urbanrural %>%
+  filter(!is.na(urbanRural)) %>%
+  filter(urbanRural == 1) %>%
+  filter(`Predicted Sentiment` == 'NEGATIVE') %>%
+  summarise(n())
+
+urbancenter1pos <- counts_posneg_urbanrural %>%
+  filter(!is.na(urbanRural)) %>%
+  filter(urbanRural == 2) %>%
+  filter(`Predicted Sentiment` == 'POSITIVE') %>%
+  summarise(n())
+
+urbancenter1neg <- counts_posneg_urbanrural %>%
+  filter(!is.na(urbanRural)) %>%
+  filter(urbanRural == 2) %>%
+  filter(`Predicted Sentiment` == 'NEGATIVE') %>%
+  summarise(n())
+
+#this takes all of the dataframes and makes it into a two-way table to show the breakdown of sentiment for each location type
+ruralcol <- c(as.numeric(rural1pos), as.numeric(rural1neg), as.numeric(rural1pos + rural1neg))
+urbanclustercol <- c(as.numeric(urbancluster1pos), as.numeric(urbancluster1neg), as.numeric(urbancluster1pos + urbancluster1neg))
+urbancentercol <- c(as.numeric(urbancenter1pos), as.numeric(urbancenter1neg), as.numeric(urbancenter1pos + urbancenter1neg))
+totalurbanrural <- c(as.numeric(rural1pos + urbancluster1pos + urbancenter1pos), as.numeric(rural1neg + urbancluster1neg + urbancenter1neg), as.numeric(rural1pos + rural1neg + urbancluster1pos + urbancluster1neg + urbancenter1pos + urbancenter1neg))
+urbanruralcounts <- data.frame(ruralcol, urbanclustercol, urbancentercol, totalurbanrural)
+colnames(urbanruralcounts) <- c('Rural', 'Urban Cluster', 'Urban Center', 'Total')
+rownames(urbanruralcounts) <- c('Positive', 'Negative', 'Total')
+
+#calculates the probabilities of negative sentiment by location
+
+urbanrural <- reviewlocation %>%
+  select(`Location Id`, urbanRural, country, `Predicted Sentiment`, Cost, publicPrivate, Tot_Population_CEN_2010, `User Id`) %>%
+  filter(!is.na(urbanRural)) %>%
+  filter(`Predicted Sentiment` == 'POSITIVE' | `Predicted Sentiment` == 'NEGATIVE') %>%
+  mutate(sentiment_values = ifelse(`Predicted Sentiment` == 'POSITIVE', 1, 0)) %>%
+  group_by(`Location Id`) %>%
+  mutate(prob = 1-sum(sentiment_values)/n()) %>%
+  distinct(`Location Id`, .keep_all = TRUE) 
+  
+#distribution of sentiment
+
+summary(urbanrural$prob)
+
+#dataframe with all rural locations
+rural1 <- urbanrural %>%
+  filter(!is.na(urbanRural)) %>%
+  filter(urbanRural == 0)
+
+#dataframe with all urban cluster locations
+urbancluster1 <- urbanrural %>%
+  filter(!is.na(urbanRural)) %>%
+  filter(urbanRural == 1)
+
+#dataframe with all urban center locations
+urbancenter1 <- urbanrural %>%
+  filter(!is.na(urbanRural)) %>%
+  filter(urbanRural == 2)
+
+#runs t-tests of all combinations of location type
+t.test(rural1$prob, urbancenter1$prob, var.equal = FALSE)
+t.test(rural1$prob, urbancluster1$prob, var.equal = FALSE)
+t.test(urbancluster1$prob, urbancenter1$prob, var.equal = FALSE)
+
+#calculates the means, std. deviations, and confidence intervals for each group (location type), also counts the number of locations (stations) in each location type 
+sentiment_by_urbanrural1 <- urbanrural %>%
+  group_by(urbanRural) %>%
+  summarise(mean = mean(prob),   
+            lowCI = ci(prob)[2],
+            hiCI = ci(prob)[3], 
+            sd = ci(prob)[4], 
+            count = n()) %>% 
+            mutate(title = ifelse(urbanRural == 0, 'Rural',
+                          ifelse(urbanRural == 1, 'Urban Cluster', 'Urban Center')))
+
+
+#graphs the mean probabilities for each location type w/ error bars. Significance stars were added in Keynote.
+urbanruralgraphic <- ggplot(sentiment_by_urbanrural1, aes(x=reorder(title, -mean), y = mean)) + 
+  geom_bar(stat = 'identity', width = 0.5, aes(fill = factor(title))) + 
+  labs(x = 'Area Type', y = 'Predicted Probability of Negative Sentiment', family = 'Helvetica', size = 25) + 
+  geom_errorbar(aes(ymin=lowCI, ymax=hiCI), width=.3, colour="grey42", position = position_dodge(0.9)) +
+  scale_y_continuous(breaks = c(0.1, 0.2, 0.3, 0.4, 0.5),
+                     labels = c('0.1', '0.2', '0.3', '0.4', '0.5'),
+                     expand = c(0,0),
+                     limits = c(0, 0.5),
+                     minor_breaks = NULL) +  
+  scale_fill_manual(values=c('#619CFF', '#00BA38', '#F8766D'), 
+                       name="Geographic Area Definition",
+                       breaks=c("Urban Center", "Urban Cluster", "Rural"),
+                       labels=c(expression("Population:" >= "50,000"), expression("Population: 2,500-49,999"), expression("Population: < 2,500")))+ 
+  theme_classic() + 
+  theme(axis.text.y = element_text(size = 12, family = 'Helvetica', color = 'black', angle = 90, hjust = .7), 
+        axis.title.y = element_text(size = 15, family = "Helvetica", color = 'black'), 
+        axis.title.x = element_text(size = 15, family = 'Helvetica', color = 'black'),
+        axis.line.x = element_line(color="black", size = 0.5),
+        axis.line.y = element_line(color="black", size = 0.5), 
+        legend.text.align = 0) + 
+  ggsave("barchart_urbanRural1.pdf")
+```
+
+```{r}
+#all counts by publicly and privately owned stations, takes out POIs that are neither public nor private
+counts_publicprivate <- reviewlocation %>%
+  select(Name, `Location Id`, urbanRural, country, `Predicted Sentiment`, Cost, publicPrivate, `User Id`, bestPOIGroup) %>%
+  filter(bestPOIGroup != 'Other') %>%
+  filter(bestPOIGroup != 'Unknown')
+
+#the following dataframes create the counts by ownership type, cost, and sentiment for tables
+publicpos <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Public') %>%
+  filter(`Predicted Sentiment` == 'POSITIVE') %>%
+  summarise(n())
+
+publicfreepos  <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Public') %>%
+  filter(Cost == 'Free') %>%
+  filter(`Predicted Sentiment` == 'POSITIVE') %>%
+  summarise(n())
+
+publicpaidpos  <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Public') %>%
+  filter(Cost == 'Paid') %>%
+  filter(`Predicted Sentiment` == 'POSITIVE') %>%
+  summarise(n())
+
+publicneg <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Public') %>%
+  filter(`Predicted Sentiment` == 'NEGATIVE') %>%
+  summarise(n())
+
+publicfreeneg  <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Public') %>%
+  filter(Cost == 'Free') %>%
+  filter(`Predicted Sentiment` == 'NEGATIVE') %>%
+  summarise(n())
+
+publicpaidneg  <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Public') %>%
+  filter(Cost == 'Paid') %>%
+  filter(`Predicted Sentiment` == 'NEGATIVE') %>%
+  summarise(n())
+
+privatepos <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Private') %>%
+  filter(`Predicted Sentiment` == 'POSITIVE') %>%
+  summarise(n())
+
+privatefreepos  <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Private') %>%
+  filter(Cost == 'Free') %>%
+  filter(`Predicted Sentiment` == 'POSITIVE') %>%
+  summarise(n())
+
+privatepaidpos  <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Private') %>%
+  filter(Cost == 'Paid') %>%
+  filter(`Predicted Sentiment` == 'POSITIVE') %>%
+  summarise(n())
+
+privateneg <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Private') %>%
+  filter(`Predicted Sentiment` == 'NEGATIVE') %>%
+  summarise(n())
+
+privatefreeneg  <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Private') %>%
+  filter(Cost == 'Free') %>%
+  filter(`Predicted Sentiment` == 'NEGATIVE') %>%
+  summarise(n())
+
+privatepaidneg  <- counts_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Private') %>%
+  filter(Cost == 'Paid') %>%
+  filter(`Predicted Sentiment` == 'NEGATIVE') %>%
+  summarise(n())
+
+#table that breaks down sentiment by publicly and privately owned locations
+publiccol <- c(as.numeric(publicpos), as.numeric(publicneg), as.numeric(publicpos + publicneg))
+privatecol <- c(as.numeric(privatepos), as.numeric(privateneg), as.numeric(privatepos + privateneg))
+totalcol <- c(as.numeric(publicpos + privatepos), as.numeric(publicneg + privateneg), as.numeric(publicpos + publicneg + privatepos + privateneg))
+publicprivatecounts <- data.frame(publiccol, privatecol, totalcol)
+colnames(publicprivatecounts) <- c('Public', 'Private', 'Total')
+rownames(publicprivatecounts) <- c('Positive', 'Negative', 'Total')
+
+#this takes all of the dataframes and makes it into a two-way table to show the breakdown of sentiment for each ownership type and cost
+publicfree <- c(as.numeric(publicfreepos), as.numeric(publicfreeneg), as.numeric(publicfreepos + publicfreeneg))
+publicpaid <- c(as.numeric(publicpaidpos), as.numeric(publicpaidneg), as.numeric(publicpaidpos + publicpaidneg))
+privatefree <- c(as.numeric(privatefreepos), as.numeric(privatefreeneg), as.numeric(privatefreepos + privatefreeneg))
+privatepaid <- c(as.numeric(privatepaidpos), as.numeric(privatepaidneg), as.numeric(privatepaidpos + privatepaidneg))
+totalownershipcost <- c(as.numeric(publicfreepos + publicpaidpos + privatefreepos + privatepaidpos), as.numeric(publicfreeneg + publicpaidneg + privatefreeneg + privatepaidneg), as.numeric(publicfreepos + publicpaidpos + privatefreepos + privatepaidpos + publicfreeneg + publicpaidneg + privatefreeneg + privatepaidneg))
+ownershipcostdata<- data.frame(publicfree, publicpaid, privatefree, privatepaid, totalownershipcost)
+colnames(ownershipcostdata) <- c('Public-Free', 'Public-Paid', 'Private-Free', 'Private-Paid', 'Total')
+rownames(ownershipcostdata) <- c('Positive', 'Negative', 'Total')
+
+
+
+
+##calculates the probability of negative sentiment at each location, also creates a column that denotes ownership type and cost
+sentiment_distribution_publicprivate <- reviewlocation %>%
+  select(`Predicted Sentiment`, `Location Id`, bestPOIGroup, publicPrivate, Cost, CBSA, `User Id`) %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(bestPOIGroup != 'Other') %>%
+  filter(bestPOIGroup != 'Unknown') %>%
+  filter(`Predicted Sentiment` == 'POSITIVE' | `Predicted Sentiment` == 'NEGATIVE') %>%
+  mutate(sentiment_values = ifelse(`Predicted Sentiment` == 'POSITIVE', 1, 0)) %>%
+  group_by(`Location Id`) %>%
+  mutate(count = n()) %>%
+  mutate(prob = 1 - sum(sentiment_values)/n()) %>%
+  mutate(PubPriCost = paste(publicPrivate, Cost, sep = '/')) %>%
+  distinct(`Location Id`, .keep_all = TRUE)
+
+sentiment_by_access <- sentiment_distribution_publicprivate %>%
+  group_by(PubPriCost) %>%
+  summarise(mean = ci(prob)[1],
+                      lowCI = ci(prob)[2],
+                      hiCI = ci(prob)[3],
+                      sd = ci(prob)[4]) %>%
+  mutate(Cost = c('Free', 'Paid', 'Free', 'Paid')) %>%
+  mutate(public_private = c('Private', 'Private', 'Public', 'Public'))
+
+#calculates the means, std. deviations, and confidence intervals for each group (ownership type/cost), also counts the number of locations (stations) in each group 
+sentiment_by_access1 <- sentiment_distribution_publicprivate %>%
+  group_by(publicPrivate) %>%
+  summarise(mean = ci(prob)[1],
+                      lowCI = ci(prob)[2],
+                      hiCI = ci(prob)[3],
+                      sd = ci(prob)[4])
+
+#creates dataframes w/ probablities per location for t-tests
+public <- sentiment_distribution_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Public')
+
+private <- sentiment_distribution_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Private')
+
+publicfree <- sentiment_distribution_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Public') %>%
+  filter(Cost == 'Free')
+
+publicpaid <- sentiment_distribution_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Public') %>%
+  filter(Cost == 'Paid')
+
+privatefree <- sentiment_distribution_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Private') %>%
+  filter(Cost == 'Free')
+
+privatepaid <- sentiment_distribution_publicprivate %>%
+  filter(!is.na(publicPrivate)) %>%
+  filter(publicPrivate == 'Private') %>%
+  filter(Cost == 'Paid')
+
+#t-tests with all combinations
+t.test(public$prob, private$prob, var.equal = FALSE)
+t.test(publicfree$prob, publicpaid$prob, var.equal = FALSE)
+t.test(privatefree$prob, privatepaid$prob, var.equal = FALSE)
+t.test(publicfree$prob, privatefree$prob, var.equal = FALSE)
+t.test(publicpaid$prob, privatepaid$prob, var.equal = FALSE)
+```
+```{r}
+#creates histogram of distribution for negative sentiment by ownership type
+pri <- hist(private$prob,breaks=c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.80, 0.85, 0.9, 0.95, 1.0), freq = TRUE)
+pub <- hist(public$prob, breaks=c(0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.80, 0.85, 0.9, 0.95, 1.0), freq = TRUE)
+# pdf("histogram_owner.pdf")
+plot(pri, col= '#F8766D', freq = TRUE)  # first histogram
+plot(pub, col='#619CFF', add=T, freq = TRUE)
+legend('topright',
+       title = 'Ownership',
+       inset=.05,
+       cex = 1,
+       c("Private","Public"),
+       pch = 15,
+       pt.cex = 2.5,
+       col=c('#F8766D', '#619CFF'),
+       horiz = FALSE,
+       bg="white", 
+       box.lty=0)
+publicprivatedistribution <- recordPlot()
+# dev.off()
+
+#ks test to see if there are differences in distribution between public and private stations
+ks.test(private$prob, public$prob)
+```
+
+```{r}
+#barchart that shows breakdown of mean probability of negative sentiment by ownership type and cost
+ownershipcost <- ggplot(sentiment_by_access, aes(x=public_private, y = mean, fill = Cost)) + 
+  geom_bar(stat = 'identity', width = 0.5, position = 'dodge')+
+             labs(x = 'Ownership', y = 'Predicted Probability of Negative Sentiment', family = 'Helvetica', size = 25) + 
+  geom_errorbar(aes(ymin=lowCI, ymax=hiCI), width=.3, colour="grey42", position = position_dodge(0.5)) +
+  scale_y_continuous(breaks = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+                     labels = c('0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7'),
+                     expand = c(0,0),
+                     limits = c(0, 0.6),
+                     minor_breaks = NULL) +
+  scale_fill_manual(values=c('#F8766D', '#619CFF')) + 
+  theme_classic() + 
+  theme(axis.text.y = element_text(size = 12, family = 'Helvetica', color = 'black', angle = 90, hjust = .7), 
+        axis.title.y = element_text(size = 12, family = "Helvetica", color = 'black'), 
+        axis.text.x = element_text(size = 12, family = 'Helvetica', color = 'black'), 
+        axis.title.x = element_text(size = 12, family = 'Helvetica', color = 'black')) + 
+ggsave("barchart_ownership.pdf")
+
+#barchart that compares mean sentiment by public and private ownership type
+publicprivategraphic <- ggplot(sentiment_by_access1, aes(x=publicPrivate, y = mean, fill = publicPrivate)) + 
+  geom_bar(stat = 'identity', width = 0.5)+
+             labs(x = 'Ownership', y = 'Predicted Probability of \n Negative Sentiment', family = 'Helvetica', size = 25) + 
+  geom_errorbar(aes(ymin=lowCI, ymax=hiCI), width=.3, colour="grey42", position = position_dodge(0.5)) + 
+  scale_fill_manual(values = c('#F8766D', '#619CFF'), guide = FALSE) +
+  scale_y_continuous(breaks = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7),
+                     labels = c('0.1', '0.2', '0.3', '0.4', '0.5', '0.6', '0.7'),
+                     expand = c(0,0),
+                     limits = c(0, 0.6),
+                     minor_breaks = NULL) +
+  theme_classic() + 
+  theme(axis.text.y = element_text(size = 12, family = 'Helvetica', color = 'black', angle = 90, hjust = .7), 
+        axis.title.y = element_text(size = 12, family = "Helvetica", color = 'black'), 
+        axis.text.x = element_text(size = 12, family = 'Helvetica', color = 'black'), 
+        axis.title.x = element_text(size = 12, family = 'Helvetica', color = 'black')) + 
+ggsave("barchart_ownership1.pdf")
+```
+
+```{r}
+#some data cleaning
+reviewlocation$bestPOIGroup <- replace(reviewlocation$bestPOIGroup, reviewlocation$bestPOIGroup == 'services', 'Services')
+reviewlocation$bestPOIGroup <- replace(reviewlocation$bestPOIGroup, reviewlocation$bestPOIGroup == 'Outdoor', 'Park')
+reviewlocation$bestPOIGroup <- replace(reviewlocation$bestPOIGroup, reviewlocation$bestPOIGroup == 'Shopping', 'Shopping Center')
+reviewlocation$bestPOIGroup <- replace(reviewlocation$bestPOIGroup, reviewlocation$bestPOIGroup == 'Convenience Store/Gas Station', 'Convenience Store')
+
+
+#this creates probabilities of negative sentiment at each location, it also filters out POIs that we did not use for our analysis
+poiranking <- reviewlocation %>%
+  select(`Location Id`, urbanRural, country, `Predicted Sentiment`, Cost, publicPrivate, Tot_Population_CEN_2010, `User Id`, bestPOIGroup) %>%
+  filter(`Predicted Sentiment` == 'POSITIVE' | `Predicted Sentiment` == 'NEGATIVE') %>%
+  filter(bestPOIGroup != 'Unknown') %>%
+  filter(bestPOIGroup != 'Other') %>%
+  mutate(sentiment_values = ifelse(`Predicted Sentiment` == 'POSITIVE', 1, 0)) %>%
+  group_by(`Location Id`) %>%
+  mutate(count = n()) %>%
+  mutate(prob = 1-sum(sentiment_values)/n()) %>%
+  distinct(`Location Id`, .keep_all = TRUE)
+
+write.csv(poiranking, "sentiment_location.csv")
+
+#filters out POIs that we are not necessary for analysis. Also, creates mean sentiments, counts for each POI.
+poi_means <- reviewlocation %>%
+filter(`Predicted Sentiment` == 'POSITIVE' | `Predicted Sentiment` == 'NEGATIVE') %>%
+  mutate(sentiment_values = ifelse(`Predicted Sentiment` == 'POSITIVE', 1, 0)) %>%
+  filter(bestPOIGroup != 'Unknown') %>%
+  filter(bestPOIGroup != 'Other') %>%
+  group_by(`Location Id`) %>%
+  mutate(prob = 1-sum(sentiment_values)/n()) %>%
+  distinct(`Location Id`, .keep_all = TRUE) %>%
+  group_by(bestPOIGroup) %>%
+  summarise(mean = mean(prob),
+            count_locations = n(),
+            std_dev = sd(prob))
+
+#calculates the percentiles
+percentiles <- quantile(poi_means$mean, c(.25, .75))
+
+#POIs are sorted into performance groups
+poi_means <- poi_means %>%
+  mutate(lowHigh = ifelse( mean < percentiles[1], 'Low',
+                          ifelse(mean > percentiles[2], 'High', 'Mid'))) %>%
+  mutate(lowHighGraphic = lowHigh)
+
+#these are created to make lists of the High, Mid, and Low performing groups
+highPOI <- poi_means %>%
+  filter(lowHigh == 'High') %>%
+  select(bestPOIGroup)
+
+midPOI <- poi_means %>%
+  filter(lowHigh == 'Mid') %>%
+  select(bestPOIGroup)
+
+lowPOI <- poi_means %>%
+  filter(lowHigh == 'Low') %>%
+  select(bestPOIGroup)
+
+#this adds the designation of high performing, mid performing, or low performing for each point of interest 
+poiranking <- poiranking %>%
+  mutate(lowHigh = ifelse(bestPOIGroup %in% highPOI$bestPOIGroup, 'High',
+                          ifelse(bestPOIGroup %in% lowPOI$bestPOIGroup, 'Low', 'Mid')))
+
+#dataframes with performance group for t-tests
+high <- poiranking %>%
+  filter(lowHigh == 'High')
+
+mid <- poiranking %>%
+  filter(lowHigh == 'Mid')
+
+low <- poiranking %>%
+  filter(lowHigh == 'Low')
+
+
+#t-tests
+t.test(low$prob, high$prob, var.equal = FALSE)
+t.test(low$prob, mid$prob, var.equal = FALSE)
+t.test(high$prob, mid$prob, var.equal = FALSE)
+```
+
+```{r}
+#colors for graphic
+cols <- c('#00BA38', '#619CFF', '#F8766D')
+
+#turns performance levels into factors
+poi_means$lowHighGraphic <- factor(poi_means$lowHighGraphic, levels=c("Low", "Mid", "High"), labels=c("High (< 25th percentile)", "Mid (25-75th percentile)", "Low (> 75th percentile)"))
+
+#graphic for POI performance 
+poi <- ggplot(poi_means, aes(x=reorder(bestPOIGroup, -mean), y = mean, fill = lowHighGraphic)) + 
+  geom_bar(stat = 'identity', width = 0.5) +
+  labs(x = 'Point of Interest (POI)', 
+       y = 'Predicted Probability of Negative Sentiment', 
+       family = 'Helvetica', size = 12) +  
+scale_fill_manual(values=cols) + 
+scale_y_continuous(breaks = c(0.2, 0.4, 0.6, 0.8, 1.0),
+                     labels = c('0.2', '0.4', '0.6', '0.8', '1.0'),
+                     expand = c(0,0),
+                     limits = c(0, 1.0),
+                     minor_breaks = NULL) +
+  labs(fill = 'Performance Group') + 
+  theme_classic() + 
+  theme(axis.text.y = element_text(size = 12, family = 'Helvetica', angle = 90), 
+        axis.title.y = element_text(size = 12, family = "Helvetica", color = 'black'), 
+        axis.text.x = element_text(size = 12, family = 'Helvetica', color = 'black', angle = 90, hjust = 1, vjust = 0.5), 
+        axis.title.x = element_text(size = 12, family = 'Helvetica', color = 'black')) + 
+  ggsave("poi_graphic.pdf")
+```
+
+```{r}
+restricted1 <- locations_scores %>%
+  select(`Access Type Name`, `Location Id`) %>%
+  filter(`Access Type Name` == 'Restricted')
+```
+
+```{r}
+graphics(urbanruralcounts, urbanruralgraphic, publicprivatedistribution, publicprivatecounts, ownershipcostdata, ownershipcost, publicprivategraphic, poi)
+```
+
+
