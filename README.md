@@ -2,6 +2,8 @@
 This code replicates protocols in the manuscript: “Popular Sentiment of Electric Vehicle Owners in the United States.” Proprietary data is restricted to authorized researchers only.
 The Python scripts will run the neural network-based language models for sentiment analysis. The R scripts will produce the tables and figures shown in the paper.
 
+[![DOI](https://zenodo.org/badge/149052541.svg)](https://zenodo.org/badge/latestdoi/149052541)
+
 ## Requirements
 
 ### Python setup
