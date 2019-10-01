@@ -216,7 +216,7 @@ def main():
     # Build model
     model = create_model(embedding_matrix=embedding_matrix, num_words=num_words, max_tokens=max_tokens,
                          filter_sizes=[3, 4, 5], l2_constraint=None,
-                         dropout_percent=0.6)
+                         dropout_percent=0.4)
 
     # Train model
     history = model.fit(x_train_pad, y_train, epochs=3, batch_size=128)
