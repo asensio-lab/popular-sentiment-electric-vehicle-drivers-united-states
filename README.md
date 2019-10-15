@@ -90,6 +90,49 @@ $ python cnn_sentiment.py
 # Precision: 0.87
 # Recall: 0.83
 ```
+As part of the CNN classification task, we could also generate visualizations of the saliency heatmaps. This can be done by running the cnn_visualization.py script in the same folder.
+
+```
+$ python cnn_sentiment.py
+# Using TensorFlow backend.
+# 2018-09-15 20:58:41.430100: I tensorflow/core/platform/cpu_feature_guard.cc:141] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+# Train size: 7162
+# Test size: 1791
+# Loading pre-trained word embeddings..
+# done in 198.498287s
+# creating embedding matrix..
+# done in 0.000003s
+# Epoch 1/3
+# 7162/7162 [==============================] - 1502s 210ms/step - loss: 0.5105 - acc: 0.7517
+# Epoch 2/3
+# 7162/7162 [==============================] - 1499s 209ms/step - loss: 0.3302 - acc: 0.8567
+# Epoch 3/3
+# 7162/7162 [==============================] - 1492s 208ms/step - loss: 0.2405 - acc: 0.9037
+# Generating predictions on the test set...
+#
+# Accuracy: 84.14%
+# Precision: 0.87
+# Recall: 0.83
+.
+.
+.
+.
+ *********
+===== text: =====
+it's working today no other cars blocking the charger spark ev
+===== label: 1.0 =====
+===== prediction: [0.43781468] =====
+===== most predictive regions of size 3 : =====
+["it's working today", 'other cars blocking', 'cars blocking the']
+===== most predictive regions of size 4 : =====
+["it's working today no", 'no other cars blocking', 'cars blocking the charger']
+===== most predictive regions of size 5 : =====
+['today no other cars blocking', 'no other cars blocking the', 'other cars blocking the charger']
+.
+.
+.
+.
+```
 
 3. Run lr_sentiment.py to evaluate performance of Logistic Regression
 
