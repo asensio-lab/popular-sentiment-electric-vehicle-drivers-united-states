@@ -333,10 +333,6 @@ def main():
     saliency_output = model.layers[12].output # class score
     gradients = model.optimizer.get_gradients(saliency_output,saliency_input)
     compute_gradients = K.function(inputs=input_tensors,outputs=gradients)
-     
-    saliency_path = 'C:\\Users\\Susie\\Documents\\GitHub\\popular-sentiment-electric-vehicle-drivers-united-states\\saliency_figures0814\\'
-    
-    
 
     for idx,doc in enumerate(x_test_my_idxs):
         matrix = compute_gradients([np.array([doc]),0])[0][0,:,:]
@@ -352,7 +348,7 @@ def main():
         ax.tick_params(axis='y', which='major', labelsize=20)
         fig.colorbar(heatmap)
         fig.set_size_inches(14,9)
-        fig.savefig(saliency_path+str(idx)+'0902.pdf',bbox_inches='tight')
+        fig.savefig(str(idx)+'0902.pdf',bbox_inches='tight')
         fig.show()        
     
 
