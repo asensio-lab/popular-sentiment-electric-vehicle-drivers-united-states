@@ -189,7 +189,7 @@ def main():
     embedding_size = 300
     print('Loading pre-trained word embeddings..')
     t0 = time()
-    file_name = 'GoogleNews-vectors-negative300.bin'
+    file_name = 'GoogleNews-vectors-negative300.bin.gz'
     w2v = gensim.models.KeyedVectors.load_word2vec_format(file_name, binary=True)
     duration = time() - t0
     print("done in %fs" % (duration))
