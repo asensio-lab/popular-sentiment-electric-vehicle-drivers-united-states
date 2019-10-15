@@ -1,5 +1,8 @@
 # Popular-Sentiment-of-Electric-Vehicles-in-the-United-States
-This code replicates protocols in the manuscript: “Popular Sentiment of Electric Vehicle Owners in the United States.” Proprietary data is restricted to authorized researchers only.
+This code replicates protocols in the manuscript submission to 'Case Studies in the Environment' in the University of California Press.
+
+This README file contains instructions for the full replication process, from setting up the code base with the required tools to executing the various algorithms for classification.
+
 The Python scripts will run the neural network-based language models for sentiment analysis. The R scripts will produce the tables and figures shown in the paper.
 
 [![DOI](https://zenodo.org/badge/149052541.svg)](https://zenodo.org/badge/latestdoi/149052541)
