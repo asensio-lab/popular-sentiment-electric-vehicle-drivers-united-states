@@ -144,6 +144,8 @@ $ python create_final_analysis_data.py
 
 10. Run t_tests_stateCBSA.Rmd. It will create two .txt files that show output of the t-tests.
 
+## Econometric Analysis of the Sentiment
+To replicate the protocols for the statistical analysis using review rate and sentiment score, see FRM_NegScore.R.
 
 
  
