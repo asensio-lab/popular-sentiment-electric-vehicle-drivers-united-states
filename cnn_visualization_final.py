@@ -280,53 +280,8 @@ def main():
 
     
     # predictions are probabilities of belonging to class 1
-    #predictions = get_softmax([x_test_my_idxs,0])[0] 
     # note: you can also use directly: 
     predictions = model.predict(x_test_pad[:100]).tolist()
-    
-    n_show = 2 # number of most predictive regions we want to display
-
-
-    def extract_regions(tokens, filter_size):
-        regions = []
-        regions.append(' '.join(tokens[:filter_size]))
-        for i in range(filter_size, len(tokens)):
-            regions.append(' '.join(tokens[(i-filter_size+1):(i+1)]))
-        return regions    
-    
-    filter_size_a = 3
-    filter_size_b = 4
-    filter_size_c = 5
-    
-    for idx,doc in enumerate(x_test_my_idxs):
-            
-        tokens = [index_to_word[elt] for elt in doc if elt!=0] # the 0 index is for padding
-        
-        # extract regions (sliding window over text)
-        regions_a = extract_regions(tokens, filter_size_a)
-        regions_b = extract_regions(tokens, filter_size_b)
-        regions_c = extract_regions(tokens, filter_size_c)
-
-        
-        print('\n *********')
-        print('===== text: =====')
-        print(' '.join(tokens))
-        print('===== label:',y_test_my_idxs[idx],'=====')
-        print('===== prediction:',predictions[idx],'=====')
-        norms_a = np.linalg.norm(reg_emb_a[idx,:,:],axis=1)
-        norms_b = np.linalg.norm(reg_emb_b[idx,:,:],axis=1)
-        norms_c = np.linalg.norm(reg_emb_c[idx,:,:],axis=1)
-        print('===== most predictive regions of size',filter_size_a,': =====')
-        
-        #aa = np.argsort(norms_a)[-3:]
-        #print([elt for idxx,elt in enumerate(regions_a) if idxx in aa]) # 'np.argsort' sorts by increasing order
-
-        print([elt for idxx,elt in enumerate(regions_a) if idxx in np.argsort(norms_a)[-n_show:]]) # 'np.argsort' sorts by increasing order
-        print('===== most predictive regions of size',filter_size_b,': =====')
-        print([elt for idxx,elt in enumerate(regions_b) if idxx in np.argsort(norms_b)[-n_show:]])   
-        print('===== most predictive regions of size',filter_size_c,': =====')
-        print([elt for idxx,elt in enumerate(regions_c) if idxx in np.argsort(norms_c)[-n_show:]])   
-        
         
     input_tensors = [model.input, K.learning_phase()]
     saliency_input = model.layers[1].output # before split into branches
