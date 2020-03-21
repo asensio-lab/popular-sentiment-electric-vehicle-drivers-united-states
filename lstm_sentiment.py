@@ -71,13 +71,6 @@ def main():
     binary_rating_mapping = {'NEGATIVE': 0.0,
                              'POSITIVE': 1.0}
     df['Sentiment'] = df['Sentiment'].map(binary_rating_mapping)
-    
-    accuracy_list = []
-    recall_list = []
-    precision_list=[]
-    
-
-    
         
     # Split data into train and test set
     reviews_train, reviews_test, \
@@ -213,10 +206,7 @@ def main():
     result = pd.DataFrame({'Accuracy':[accuracy],'Precision':[precision], 'Recall': [recall], 'F1 Score': [f1_score], 'Training Time': [duration], 'Prediction Time': [prediction_time]})
 
     result.to_csv('rnn_test.csv', index=True, mode=  'a', header=False)
-    
-    accuracy_list.append(accuracy)
-    precision_list.append(precision)
-    recall_list.append(recall)
+
      
 
 
