@@ -83,7 +83,7 @@ $ python cnn_sentiment.py
 # 7162/7162 [==============================] - 1492s 208ms/step - loss: 0.2405 - acc: 0.9037
 # Generating predictions on the test set...
 #
-# Accuracy: 84.37%
+# Accuracy: 84.4%
 # Precision: 0.88
 # Recall: 0.82
 ```
@@ -92,7 +92,7 @@ $ python cnn_sentiment.py
 
 ```
 $ python lstm_sentiment.py
-# Accuracy: 84.14%
+# Accuracy: 83.9%
 # Precision: 0.83
 # Recall: 0.86
 ```
@@ -140,7 +140,7 @@ $ python cnn_make_predictions.py
 # done in 6714.033920s
 ```
 
-7. Run
+7. Run cnn_visualization_final.py to create saliency heatmaps for interpretability of the CNN model.
 
 
 8. Run create_final_analysis_data.py to create final predictions dataset by replacing machine predictions of reviews that are in training set with ground truth labels from humans. This will generate the `NA Reviews Data Best Sentiment.csv` file.
