@@ -83,12 +83,22 @@ $ python cnn_sentiment.py
 # 7162/7162 [==============================] - 1492s 208ms/step - loss: 0.2405 - acc: 0.9037
 # Generating predictions on the test set...
 #
-# Accuracy: 84.14%
-# Precision: 0.87
-# Recall: 0.83
+# Accuracy: 84.37%
+# Precision: 0.88
+# Recall: 0.82
 ```
 
-3. Run lr_sentiment.py to evaluate performance of Logistic Regression
+3. Run lstm_sentiment.py to evaluate performance of LSTM. This may take 60 minutes to run on a cpu
+
+```
+$ python lstm_sentiment.py
+# Accuracy: 84.14%
+# Precision: 0.83
+# Recall: 0.86
+```
+
+
+4. Run lr_sentiment.py to evaluate performance of Logistic Regression
 
 ```
 $ python lr_sentiment.py
@@ -97,7 +107,7 @@ $ python lr_sentiment.py
 # Recall: 0.82
 ```
 
-4. Run svm_sentiment.py to evaluate performance of SVM
+5. Run svm_sentiment.py to evaluate performance of SVM
 
 ```
 $ python svm_sentiment.py
@@ -106,7 +116,8 @@ $ python svm_sentiment.py
 # Recall: 0.79
 ```
 
-5. Run cnn_make_predictions.py to generate sentiment predictions for all reviews. This will create the `NA Reviews Data Sentiment.csv` file. This may take around an hour to run on a cpu.
+
+6. Run cnn_make_predictions.py to generate sentiment predictions for all reviews. This will create the `NA Reviews Data Sentiment.csv` file. This may take around an hour to run on a cpu.
 
 ```
 $ python cnn_make_predictions.py
@@ -129,20 +140,23 @@ $ python cnn_make_predictions.py
 # done in 6714.033920s
 ```
 
-6. Run create_final_analysis_data.py to create final predictions dataset by replacing machine predictions of reviews that are in training set with ground truth labels from humans. This will generate the `NA Reviews Data Best Sentiment.csv` file.
+7. Run
+
+
+8. Run create_final_analysis_data.py to create final predictions dataset by replacing machine predictions of reviews that are in training set with ground truth labels from humans. This will generate the `NA Reviews Data Best Sentiment.csv` file.
 
 ```
 $ python create_final_analysis_data.py
 # sys:1: DtypeWarning: Columns (3) have mixed types. Specify dtype option on import or set low_memory=False.
 ```
 
-7. The rest of the steps are in R. Ensure `NA Reviews Data Best Sentiment.csv` and `NA_Location_Data_7-16-18.csv` are in the working directory. 
+9. The rest of the steps are in R. Ensure `NA Reviews Data Best Sentiment.csv` and `NA_Location_Data_7-16-18.csv` are in the working directory. 
 
-8. Run final_dataset.R to generate `final_data.csv`
+10. Run final_dataset.R to generate `final_data.csv`
 
-9. Run final_analysis.Rmd. All graphics and tables (except for the t-tests for CBSAs and States) will display at the bottom of the file. 
+11. Run final_analysis.Rmd. All graphics and tables (except for the t-tests for CBSAs and States) will display at the bottom of the file. 
 
-10. Run t_tests_stateCBSA.Rmd. It will create two .txt files that show output of the t-tests.
+12. Run t_tests_stateCBSA.Rmd. It will create two .txt files that show output of the t-tests.
 
 ## Econometric Analysis of the Sentiment
 To replicate the protocols for the statistical analysis using review rate and sentiment score, see FRM_NegScore.R.
