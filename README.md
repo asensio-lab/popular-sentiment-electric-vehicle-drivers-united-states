@@ -140,7 +140,7 @@ $ python cnn_make_predictions.py
 # done in 6714.033920s
 ```
 
-7. Run cnn_visualization_final.py to create saliency heatmaps for interpretability of the CNN model.
+7. Run cnn_visualization_final.py to create saliency heatmaps for interpretability of the CNN model. The code is referenced from Tixier, A. J.-P.  Notes on deep learning for nlp.arXiv933preprint arXiv:1808.09772(2018).
 
 
 8. Run create_final_analysis_data.py to create final predictions dataset by replacing machine predictions of reviews that are in training set with ground truth labels from humans. This will generate the `NA Reviews Data Best Sentiment.csv` file.
