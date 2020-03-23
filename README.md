@@ -83,7 +83,7 @@ $ python cnn_sentiment.py
 # 7162/7162 [==============================] - 1492s 208ms/step - loss: 0.2405 - acc: 0.9037
 # Generating predictions on the test set...
 #
-# Accuracy: 84.4%
+# Accuracy: 84.37%
 # Precision: 0.88
 # Recall: 0.82
 ```
@@ -92,8 +92,8 @@ $ python cnn_sentiment.py
 
 ```
 $ python lstm_sentiment.py
-# Accuracy: 83.9%
-# Precision: 0.83
+# Accuracy: 83.81%
+# Precision: 0.85
 # Recall: 0.86
 ```
 
