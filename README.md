@@ -157,7 +157,7 @@ $ python create_final_analysis_data.py
 
 ## Saliency heatmap generation for CNN interpretability
 Run cnn_visualization_final.py to create saliency heatmaps for interpretability of the CNN model. The code is referenced from Tixier, A. J.-P.  Notes on deep learning for nlp.arXiv933preprint arXiv:1808.09772(2018).
-<iframe src="saliency_heatmap" width='100%" height="100%">
+<iframe src="https://github.com/asensio-lab/popular-sentiment-electric-vehicle-drivers-united-states/edit/master/saliency_heatmap.pdf" width='100%" height="100%">
 
 ## Econometric Analysis of the Sentiment
 To replicate the protocols for the statistical analysis using review rate and sentiment score, see FRM_NegScore.R.
