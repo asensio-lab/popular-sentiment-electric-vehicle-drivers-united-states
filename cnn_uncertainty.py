@@ -41,7 +41,7 @@ def clean_text(text):
 # Creates the CNN with the specified parameters
 def create_model(embedding_matrix, num_words, max_tokens, filter_sizes,
                  lr=1e-3, l2_constraint=None, num_filters=100,
-                 dropout_percent=0.6, embedding_size=300):
+                 dropout_percent=0.3, embedding_size=300):
     """
     Creates the CNN with the specified parameters.
 
@@ -158,7 +158,7 @@ def main():
     recall_list = []
     precision_list=[]
     
-    num_iteration = 2
+    num_iteration = 1000
     
     for i in range(num_iteration):
         # Split data into train and test set
@@ -225,7 +225,7 @@ def main():
         # Build model
         model = create_model(embedding_matrix=embedding_matrix, num_words=num_words, max_tokens=max_tokens,
                              filter_sizes=[3, 4, 5], l2_constraint=None,
-                             dropout_percent=0.6)
+                             dropout_percent=0.3)
     
         # Train model
         history = model.fit(x_train_pad, y_train, epochs=3, batch_size=128)
