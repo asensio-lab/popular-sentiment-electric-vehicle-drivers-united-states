@@ -155,7 +155,7 @@ $ python create_final_analysis_data.py
 
 11. Run t_tests_stateCBSA.Rmd. It will create two .txt files that show output of the t-tests.
 
-## Saliency heatmap generation for CNN interpretability
+## ML Data Visualization: Saliency heatmap for CNN model interpretability
 Run cnn_visualization_final.py to create saliency heatmaps for interpretability of the CNN model. This code requires "training_data.csv" file, and WordtoVec. The code is referenced from Tixier, A. J.-P.  Notes on deep learning for nlp.arXiv933preprint arXiv:1808.09772(2018).                                                        
     
 ## Econometric Analysis of the Sentiment
