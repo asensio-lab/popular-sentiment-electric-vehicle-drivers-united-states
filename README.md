@@ -158,7 +158,10 @@ $ python create_final_analysis_data.py
 ## ML Data Visualization: Saliency heatmap for CNN model interpretability
 Run cnn_visualization_final.py to create saliency heatmaps for interpretability of the CNN model. This code requires "training_data.csv" file, and WordtoVec. The code is referenced from Tixier, A. J.-P.  Notes on deep learning for nlp.arXiv933preprint arXiv:1808.09772(2018).                                                        
     
-## Econometric Analysis of the Sentiment
+## Statistical Uncertainty of CNN model
+Starting with a random data split and initialization, we report the statistical uncertainty of the test accuracy for the CNN classifier for 1000 runs. For replication, see cnn_uncertainty.py.
+
+## Econometric Analysis of the Consumer Sentiment
 To replicate the protocols for the statistical analysis using review rate and sentiment score, see FRM_NegScore.R.
 
 
