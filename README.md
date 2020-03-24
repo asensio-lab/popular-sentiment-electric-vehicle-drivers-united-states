@@ -140,23 +140,23 @@ $ python cnn_make_predictions.py
 # done in 6714.033920s
 ```
 
-7. Run cnn_visualization_final.py to create saliency heatmaps for interpretability of the CNN model. The code is referenced from Tixier, A. J.-P.  Notes on deep learning for nlp.arXiv933preprint arXiv:1808.09772(2018).
-
-
-8. Run create_final_analysis_data.py to create final predictions dataset by replacing machine predictions of reviews that are in training set with ground truth labels from humans. This will generate the `NA Reviews Data Best Sentiment.csv` file.
+7. Run create_final_analysis_data.py to create final predictions dataset by replacing machine predictions of reviews that are in training set with ground truth labels from humans. This will generate the `NA Reviews Data Best Sentiment.csv` file.
 
 ```
 $ python create_final_analysis_data.py
 # sys:1: DtypeWarning: Columns (3) have mixed types. Specify dtype option on import or set low_memory=False.
 ```
 
-9. The rest of the steps are in R. Ensure `NA Reviews Data Best Sentiment.csv` and `NA_Location_Data_7-16-18.csv` are in the working directory. 
+8. The rest of the steps are in R. Ensure `NA Reviews Data Best Sentiment.csv` and `NA_Location_Data_7-16-18.csv` are in the working directory. 
 
-10. Run final_dataset.R to generate `final_data.csv`
+9. Run final_dataset.R to generate `final_data.csv`
 
-11. Run final_analysis.Rmd. All graphics and tables (except for the t-tests for CBSAs and States) will display at the bottom of the file. 
+10. Run final_analysis.Rmd. All graphics and tables (except for the t-tests for CBSAs and States) will display at the bottom of the file. 
 
-12. Run t_tests_stateCBSA.Rmd. It will create two .txt files that show output of the t-tests.
+11. Run t_tests_stateCBSA.Rmd. It will create two .txt files that show output of the t-tests.
+
+## Saliency heatmap generation for CNN interpretability
+Run cnn_visualization_final.py to create saliency heatmaps for interpretability of the CNN model. The code is referenced from Tixier, A. J.-P.  Notes on deep learning for nlp.arXiv933preprint arXiv:1808.09772(2018).
 
 ## Econometric Analysis of the Sentiment
 To replicate the protocols for the statistical analysis using review rate and sentiment score, see FRM_NegScore.R.
