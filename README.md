@@ -156,7 +156,7 @@ $ python create_final_analysis_data.py
 11. Run t_tests_stateCBSA.Rmd. It will create two .txt files that show output of the t-tests.
 
 ## ML Data Visualization: Saliency heatmap for CNN model interpretability
-Run cnn_visualization_final.py to create saliency heatmaps for interpretability of the CNN model. This code requires "training_data.csv" file, and WordtoVec. The code is referenced from Tixier, A. J.-P.  Notes on deep learning for nlp.arXiv933preprint arXiv:1808.09772(2018).                                                        
+Run cnn_visualization_final.py to create saliency heatmaps for interpretability of the CNN model. This code requires "cnn_model.hdf5", and "tokenizer.pickle" files. The code is referenced from Tixier, A. J.-P.  Notes on deep learning for nlp.arXiv933preprint arXiv:1808.09772(2018).                                                        
     
 ## Statistical Uncertainty of CNN model
 Starting with a random data split and initialization, we report the statistical uncertainty of the test accuracy for the CNN classifier for 1000 runs. For replication, see cnn_uncertainty.py.
