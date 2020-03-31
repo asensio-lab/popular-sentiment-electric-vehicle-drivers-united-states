@@ -36,7 +36,7 @@ def main():
 
 
     # Load trained CNN model
-    filepath="cnn_model.hdf5"
+    filepath="cnn_dropout03_final.hdf5"
     model = load_model(filepath)
 
     # Generate predictions on test reviews
